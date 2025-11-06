@@ -9,19 +9,193 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  background: #0f0f11; /* dark background */
+  color: #e6e6e6; /* light text */
+  box-sizing: border-box;
 }
 
-button {
+/* action buttons area */
+.controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.action-btn {
   margin: 10px;
   padding: 15px 30px;
   font-size: 16px;
   cursor: pointer;
-  border: 3px solid #ccc;
-  border-radius: 10%;
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  min-width: 120px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
 }
 
+/* distinct colors for actions (dark-friendly) */
+.btn-power {
+  background: linear-gradient(180deg, #2e7d32, #235d2a); /* dark green */
+}
+.btn-power-hold {
+  background: linear-gradient(180deg, #ffb74d, #ff9800); /* warm orange */
+  color: #111;
+}
+.btn-reset,
+.clear-btn {
+  background: linear-gradient(180deg, #d32f2f, #b71c1c); /* dark red */
+}
+
+/* status text */
 #status-text {
   margin: 20px 0;
   font-size: 18px;
   font-weight: bold;
+  color: #e0e0e0;
+}
+
+/* Accordion styles - inputs and save/clear hidden by default */
+.accordion {
+  width: 90%;
+  max-width: 420px;
+  margin-top: 8px;
+}
+
+.accordion-toggle {
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid #262626;
+  background: #121214;
+  color: #e6e6e6;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* hidden content */
+.accordion .content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.28s ease, padding 0.28s ease;
+  background: #121214;
+  border: 1px solid #1f1f1f;
+  border-top: none;
+  padding: 0 14px;
+  box-sizing: border-box;
+}
+
+/* when open show content */
+.accordion.open .content {
+  max-height: 420px; /* large enough to show inputs */
+  padding: 12px 14px 16px;
+}
+
+/* inputs inside accordion */
+.accordion input[type="text"],
+.accordion input[type="password"] {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #141416;
+  color: #e6e6e6;
+  font-size: 15px;
+}
+
+/* placeholder color */
+.accordion input::placeholder {
+  color: #9a9a9a;
+}
+
+/* settings action buttons */
+.settings-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.save-btn {
+  background: linear-gradient(180deg, #1976d2, #0d47a1);
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+.clear-btn {
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* responsive tweaks for small screens and installed apps */
+@media (max-width: 600px) {
+  body {
+    padding: 12px;
+    justify-content: flex-start;
+  }
+  .action-btn {
+    padding: 18px 26px;
+    font-size: 18px;
+    min-width: 140px;
+  }
+  #status-text {
+    font-size: 20px;
+  }
+}
+
+/* optional: slight increase for very small devices */
+@media (max-device-width: 420px) {
+  html,
+  body {
+    font-size: 1.05rem;
+  }
+}
+
+/* Button press animation */
+.action-btn {
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+.action-btn:active {
+  transform: translateY(2px) scale(0.97);
+  filter: brightness(0.95);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+.save-btn:active,
+.clear-btn:active {
+  transform: translateY(1px) scale(0.98);
+  opacity: 0.95;
+  transition: transform 0.1s, opacity 0.1s;
+}
+
+/* Error message styling */
+.error-text {
+  color: #ff5252;
+  font-size: 14px;
+  margin: 8px 0;
+  display: none;
+}
+
+.error-text.visible {
+  display: block;
+}
+
+/* Input focus state */
+.accordion input:focus {
+  outline: none;
+  border-color: #3a8ee6;
+  box-shadow: 0 0 8px rgba(58, 142, 230, 0.12);
 }

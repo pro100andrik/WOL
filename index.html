@@ -8,6 +8,10 @@
       http-equiv="Content-Security-Policy"
       content="connect-src http: https:"
     />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.2, maximum-scale=3"
+    />
     <link
       rel="icon"
       type="image/png"
@@ -18,18 +22,66 @@
 
   <body>
     <h1>Wake on Lan!</h1>
-    <button id="power-button" onclick="handleButton('power')">Power</button>
-    <button id="power-hold-button" onclick="handleButton('powerHold')">
-      Power Hold
-    </button>
-    <button id="reset-button" onclick="handleButton('reset')">Reset</button>
-    <span id="status-text">Waiting</span>
-    <input type="text" id="server-input" placeholder="Server" />
-    <input type="text" id="port-input" placeholder="Port" />
-    <input type="text" id="hostname-input" placeholder="Hostname" />
-    <input type="password" id="password-input" placeholder="Password" />
-    <button onclick="saveConfig()">Save</button>
-    <button onclick="clearConfig()">Clear</button>
+
+    <!-- action buttons with distinct classes -->
+    <div class="controls">
+      <button
+        id="power-button"
+        class="action-btn btn-power"
+        onclick="handleButton('power')"
+      >
+        Power
+      </button>
+      <button
+        id="power-hold-button"
+        class="action-btn btn-power-hold"
+        onclick="handleButton('powerHold')"
+      >
+        Power Hold
+      </button>
+      <button
+        id="reset-button"
+        class="action-btn btn-reset"
+        onclick="handleButton('reset')"
+      >
+        Reset
+      </button>
+    </div>
+
+    <span id="status-text">Waiting for action</span>
+    <span id="error-text" class="error-text"></span>
+
+    <!-- accordion for hidden inputs -->
+    <div class="accordion" id="settings-accordion">
+      <button
+        id="settings-toggle"
+        class="accordion-toggle"
+        aria-expanded="false"
+        onclick="toggleSettings()"
+      >
+        Settings
+      </button>
+      <div class="content" id="settings-content">
+        <input type="text" id="server-input" placeholder="Server" required />
+        <input type="text" id="port-input" placeholder="Port" />
+        <input
+          type="text"
+          id="hostname-input"
+          placeholder="Hostname"
+          required
+        />
+        <input
+          type="password"
+          id="password-input"
+          placeholder="Password"
+          required
+        />
+        <div class="settings-actions">
+          <button onclick="saveConfig()" class="save-btn">Save</button>
+          <button onclick="clearConfig()" class="clear-btn">Clear</button>
+        </div>
+      </div>
+    </div>
   </body>
 
   <script>
@@ -47,7 +99,28 @@
       navigator.serviceWorker.register("service-worker.js");
     }
 
+    function validateInputs() {
+      const server = getServer();
+      const hostname = getHostname();
+      const password = getPassword();
+      const errorEl = document.getElementById("error-text");
+
+      if (!server || !hostname || !password) {
+        errorEl.innerText =
+          "Please fill in all required fields (Server, Hostname, Password)";
+        errorEl.classList.add("visible");
+        return false;
+      }
+
+      errorEl.classList.remove("visible");
+      return true;
+    }
+
     function saveConfig() {
+      if (!validateInputs()) {
+        return;
+      }
+
       const server = getServer();
       const port = getPort();
       const host = getHostname();
@@ -57,7 +130,7 @@
       localStorage.setItem("port", port);
       localStorage.setItem("host", host);
       localStorage.setItem("password", password);
-      alert("Saved!");
+      setStatusText("Config Saved", "green", 2000);
     }
 
     function clearConfig() {
@@ -70,7 +143,7 @@
       document.getElementById("port-input").value = "";
       document.getElementById("hostname-input").value = "";
       document.getElementById("password-input").value = "";
-      alert("Cleared!");
+      setStatusText("Config Cleared", "green", 2000);
     }
 
     function getServer() {
@@ -89,8 +162,15 @@
       return document.getElementById("password-input").value;
     }
 
-    function setStatusLoading(action) {
-      document.getElementById("status-text").innerText = "Loading " + action;
+    function setStatusText(text, color = "#e6e6e6", delay = 10000) {
+      const statusEl = document.getElementById("status-text");
+      statusEl.innerText = text;
+      statusEl.style.color = color;
+
+      setTimeout(() => {
+        document.getElementById("status-text").innerText = "Waiting for action";
+        document.getElementById("status-text").style.color = "#e6e6e6";
+      }, delay);
     }
 
     async function getStatus(host, action, password) {
@@ -105,18 +185,44 @@
           }
         );
         console.log("response", response);
-        const status = await response.text();
-        document.getElementById("status-text").innerText = status;
+        if (response.ok && response.status == 200) {
+          setStatusText(action + " pressed", "green", 3000);
+          // document.getElementById("status-text").innerText =
+          //   action + " pressed";
+        } else if (response.status == 403) {
+          setStatusText("Bad Password", "red");
+          // document.getElementById("status-text").innerText = "Bad Password";
+          return;
+        } else {
+          setStatusText("Error", "red");
+          // document.getElementById("status-text").innerText = "error";
+          return;
+        }
       } catch (error) {
         console.log("error", error);
-        document.getElementById("status-text").innerText = "error";
+        setStatusText("Error", "red");
         return;
       }
     }
 
     async function handleButton(button) {
-      setStatusLoading(button);
+      if (!validateInputs()) {
+        return;
+      }
+
+      setStatusText("Loading " + button, "yellow");
       await getStatus(getHostname(), button, getPassword());
     }
+
+    // Accordion toggle
+    function toggleSettings() {
+      const acc = document.getElementById("settings-accordion");
+      const toggle = document.getElementById("settings-toggle");
+      const isOpen = acc.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    }
+
+    // Start closed (explicit)
+    document.getElementById("settings-accordion").classList.remove("open");
   </script>
 </html>
