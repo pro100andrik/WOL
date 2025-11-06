@@ -24,13 +24,20 @@
     </button>
     <button id="reset-button" onclick="handleButton('reset')">Reset</button>
     <span id="status-text">Waiting</span>
-    <input type="text" name="" id="hostname-input" placeholder="Hostname" />
-    <input type="password" name="" id="password-input" placeholder="Password" />
-    <button onclick="saveHostAndPass()">Save</button>
-    <button onclick="clearHostAndPass()">Clear</button>
+    <input type="text" id="server-input" placeholder="Server" />
+    <input type="text" id="port-input" placeholder="Port" />
+    <input type="text" id="hostname-input" placeholder="Hostname" />
+    <input type="password" id="password-input" placeholder="Password" />
+    <button onclick="saveConfig()">Save</button>
+    <button onclick="clearConfig()">Clear</button>
   </body>
 
   <script>
+    // Load saved values
+    document.getElementById("server-input").value =
+      localStorage.getItem("server") || "";
+    document.getElementById("port-input").value =
+      localStorage.getItem("port") || "";
     document.getElementById("hostname-input").value =
       localStorage.getItem("host") || "";
     document.getElementById("password-input").value =
@@ -40,18 +47,38 @@
       navigator.serviceWorker.register("service-worker.js");
     }
 
-    function saveHostAndPass() {
+    function saveConfig() {
+      const server = getServer();
+      const port = getPort();
       const host = getHostname();
       const password = getPassword();
+
+      localStorage.setItem("server", server);
+      localStorage.setItem("port", port);
       localStorage.setItem("host", host);
       localStorage.setItem("password", password);
       alert("Saved!");
     }
 
-    function clearHostAndPass() {
+    function clearConfig() {
+      localStorage.removeItem("server");
+      localStorage.removeItem("port");
       localStorage.removeItem("host");
       localStorage.removeItem("password");
+
+      document.getElementById("server-input").value = "";
+      document.getElementById("port-input").value = "";
+      document.getElementById("hostname-input").value = "";
+      document.getElementById("password-input").value = "";
       alert("Cleared!");
+    }
+
+    function getServer() {
+      return document.getElementById("server-input").value;
+    }
+
+    function getPort() {
+      return document.getElementById("port-input").value;
     }
 
     function getHostname() {
@@ -68,9 +95,15 @@
 
     async function getStatus(host, action, password) {
       try {
-        const response = await fetch(`${host}/${action}?key=${password}`, {
-          method: "GET",
-        });
+        const server = getServer();
+        const port = getPort();
+
+        const response = await fetch(
+          `https://${host}/${action}?key=${password}&server=${server}&port=${port}`,
+          {
+            method: "GET",
+          }
+        );
         console.log("response", response);
         const status = await response.text();
         document.getElementById("status-text").innerText = status;

@@ -1,6 +1,6 @@
 {
-  "name": "Turn me ON!",
-  "short_name": "TMO",
+  "name": "Wake On Lan!",
+  "short_name": "WOL",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
